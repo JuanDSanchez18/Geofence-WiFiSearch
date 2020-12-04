@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Geovallado Scanner</string>
+    <string name="ScanList" />
+    <string name="wait_geofence">Waiting geofence activation</string>
+    <string name="start_scan">Scan Wifi started</string>
+    <string name="stop_service">Stop service</string>
+    <string name="exit_geofence">Exit Geofence</string>
+    <string name="enter_geofence">Enter geofence</string>
+
+
+</resources>
