@@ -3,11 +3,13 @@ package com.example.geovalladoscanner
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
@@ -111,9 +113,9 @@ class MainActivity : AppCompatActivity() {
     private fun createLocationRequestAndcheckSettings() {
 
         locationRequest = LocationRequest.create()?.apply {
-            interval = 30 * 1000  //revisar
+            interval = 20 * 1000  //revisar
             fastestInterval = 15 * 1000
-            maxWaitTime = 45 * 1000
+            maxWaitTime = 40 * 1000
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }!!
 
@@ -243,5 +245,22 @@ class MainActivity : AppCompatActivity() {
             startService(it)
         }
     }
+
+    private lateinit var wakeLock: PowerManager.WakeLock
+    override fun onPause() {
+        super.onPause()
+        wakeLock =
+            (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+                newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::MyWakelockTag").apply {
+                    acquire(10*60*1000L /*10 minutes*/)
+                }
+            }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        wakeLock.release()
+    }
 }
+
 

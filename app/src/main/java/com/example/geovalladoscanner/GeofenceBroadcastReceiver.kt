@@ -37,10 +37,10 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                     it.action = Actions.ENTER.name
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         context.startForegroundService(it)
-                    }else {
-                        sendNotification(context, geofenceTransitionDetails)
-                        context.startService(it)
+                        return
                     }
+                    sendNotification(context, geofenceTransitionDetails)
+                    context.startService(it)
 
                 }
             }

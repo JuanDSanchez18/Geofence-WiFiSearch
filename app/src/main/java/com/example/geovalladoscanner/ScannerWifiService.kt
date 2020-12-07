@@ -2,10 +2,9 @@ package com.example.geovalladoscanner
 
 import android.annotation.SuppressLint
 import android.app.Service
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
+import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
@@ -19,23 +18,29 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+
 private val runningOOrLater =
     Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+
+private lateinit var aContext: Context
 
 private lateinit var wifiManager: WifiManager
 private lateinit var wakeLock: PowerManager.WakeLock
 private lateinit var wifiLock: WifiManager.WifiLock
 
+private lateinit var locationManager: LocationManager
+
 private var isGeofence = false
 private var isRepetitiveScan = false
 private var isSSID = false
+private var numberOfSSID = 0
 
-private var repetitiveDelay = 40 * 1000
+private var repetitiveDelay = 35 * 1000
 private var isChangeRepetitivedelay = false
 
-    private val apSSIDlist = listOf("Esp32_Serial1", "Network 25","2","3")
-val capApList: MutableList<String> = mutableListOf()
-val repetitiveAplist : MutableList<Int> = mutableListOf()
+private val apSSIDlist = listOf("Esp32_Serial1", "Network 25","2","3")
+private val capApList: MutableList<String> = mutableListOf()
+private val repetitiveAplist : MutableList<Int> = mutableListOf()
 private var countSSID = 0
 private var outSSID = 0
 
@@ -47,7 +52,7 @@ class ScannerWifiService : Service() {
             when (intent.action) {
                 Actions.ENTER.name -> {
                     isGeofence = true
-                    repetitiveDelay = 40 * 1000
+                    repetitiveDelay = 35 * 1000
                     if (!isRepetitiveScan){
                         geofenceEnter()
                     }else if (isChangeRepetitivedelay){
@@ -95,12 +100,13 @@ class ScannerWifiService : Service() {
     private val wifiScanReceiver = object : BroadcastReceiver() {
         @RequiresApi(Build.VERSION_CODES.M)
         override fun onReceive(context: Context, intent: Intent) {
+            aContext = context
             val success = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false)
             if (success) {
-                Toast.makeText(context, "Success Scan", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Success Scan", Toast.LENGTH_SHORT).show()
                 scanSuccess()
             }
-            else Toast.makeText(context, "Fail Scan", Toast.LENGTH_LONG).show()
+            else Toast.makeText(context, "Fail Scan", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -128,6 +134,7 @@ class ScannerWifiService : Service() {
 
     private fun initializeScanWifi() {
         wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        locationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
         val intentFilter = IntentFilter()
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
@@ -165,8 +172,25 @@ class ScannerWifiService : Service() {
     }
 
     private fun startWifiScan () {
+        var ready = true
         if (wifiManager.isWifiEnabled) {
-            wifiManager.startScan()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                if (!locationManager.isLocationEnabled) {
+                    ready = false
+                    //Toast.makeText(applicationContext, "Required GPS", Toast.LENGTH_SHORT).show()
+                    stopService()
+                    //not work, may be applicationContext
+                    //Toast.makeText(applicationContext, "I'm a toast!", Toast.LENGTH_SHORT).show()
+                }
+            }
+            if (ready) {
+                val success = wifiManager.startScan()
+                if (!success) {
+                    // scan failure handling
+                    Toast.makeText(applicationContext, "Something wrong", Toast.LENGTH_SHORT).show()
+                    //not work
+                }
+            }
         }
     }
 
@@ -182,15 +206,15 @@ class ScannerWifiService : Service() {
 
     private fun scanSuccess() {
         isSSID = false
+        var numSSID = 0
         val results = wifiManager.scanResults
         for (result in results) {
             if (result.SSID in apSSIDlist) {
                 if (result.SSID in capApList) {
                     val index = capApList.indexOf(result.SSID)
-                    countSSID = repetitiveAplist[index]
-                    countSSID += 1
+                    countSSID = repetitiveAplist[index] + 1
                     repetitiveAplist[index] = countSSID
-                    if (countSSID == 9) { // ~= 360 s = 6 min
+                    if (countSSID == 15) { // ~= 360 s = 6 min
                         repetitiveDelay = 2 * 60 * 1000
                         isChangeRepetitivedelay = true
                     }
@@ -198,11 +222,17 @@ class ScannerWifiService : Service() {
                     capApList.add(result.SSID)
                     repetitiveAplist.add(0)
                 }
-                isSSID = true
-                outSSID = 0
+                numSSID += 1
             }
         }
 
+        if (numSSID  >  0) {
+            isSSID = true
+            outSSID = 0
+            if (numSSID != numberOfSSID) {
+                numberOfSSID = numSSID
+            }
+        }
 
         if (!isSSID and !isGeofence) {
             outSSID++
@@ -211,7 +241,7 @@ class ScannerWifiService : Service() {
                 isChangeRepetitivedelay = false
                 repetitiveScanWifi()
             }
-            if (outSSID == 3)
+            if (outSSID == 3)  
                 stopService()
         }
     }
@@ -225,7 +255,7 @@ class ScannerWifiService : Service() {
     }
 
 }
-
+/*OTRA MIERDA MÁS*/
 
 /*
 References

@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
@@ -19,8 +20,13 @@ fun createNotificationChannel(context: Context) {
         val name = "STUTM"
         val descriptionText = "Channel description"
         val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val channel = NotificationChannel(channelId, name, importance).apply {
-            description = descriptionText
+        val channel = NotificationChannel(channelId, name, importance).let {
+            it.description = descriptionText
+            it.enableLights(true)
+            it.lightColor = Color.RED
+            it.enableVibration(true)
+            it.vibrationPattern = longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
+            it
         }
 
         // Register the channel with the system
@@ -44,12 +50,11 @@ fun sendNotification(context: Context, geofenceTransitionDetails: String) {
         .setContentTitle("Activación geovallado")
         .setContentText(geofenceTransitionDetails)
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        .setVibrate(longArrayOf(1L, 2L, 3L))
+        .setVibrate(longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400))
 
         // Set the intent that will fire when the user taps the notification
         .setContentIntent(pendingIntent)
-        .setAutoCancel(true)
-
+        //.setAutoCancel(true)
 
     with(NotificationManagerCompat.from(context)) {
         // notificationId is a unique int for each notification that you must define
