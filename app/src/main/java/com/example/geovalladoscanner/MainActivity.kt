@@ -25,9 +25,6 @@ class MainActivity : AppCompatActivity() {
 
     private val tag = "MainActivity"
 
-    private val runningQOrLater =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
 
@@ -83,33 +80,48 @@ class MainActivity : AppCompatActivity() {
     //request permission Q
     private fun checkPermissions(): Boolean {
 
-        if (runningQOrLater) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                ),
-                21
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                22
             )
+
+            val permissionAccessCourseLocationApproved = ActivityCompat
+                .checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+                    PackageManager.PERMISSION_GRANTED
             val permissionAccessFineLocationApproved = ActivityCompat
                 .checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                     PackageManager.PERMISSION_GRANTED
+
             val backgroundLocationPermissionApproved = ActivityCompat
                 .checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) ==
                     PackageManager.PERMISSION_GRANTED
 
-            return permissionAccessFineLocationApproved && backgroundLocationPermissionApproved
+            return permissionAccessCourseLocationApproved && permissionAccessFineLocationApproved
+                    && backgroundLocationPermissionApproved
+
         }else {
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                arrayOf(
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION),
                 22
             )
 
-            return ActivityCompat
+            val permissionAccessCourseLocationApproved = ActivityCompat
+                .checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+                    PackageManager.PERMISSION_GRANTED
+            val permissionAccessFineLocationApproved = ActivityCompat
                 .checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                     PackageManager.PERMISSION_GRANTED
+
+            return permissionAccessCourseLocationApproved && permissionAccessFineLocationApproved
 
         }
     }
