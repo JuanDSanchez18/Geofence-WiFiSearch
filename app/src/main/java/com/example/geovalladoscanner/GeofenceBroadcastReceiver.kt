@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.text.TextUtils
-import android.util.Log
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
 
@@ -18,7 +17,6 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         val geofenceEvent = GeofencingEvent.fromIntent(intent)
         if (geofenceEvent.hasError()) {
             //val errorMessage = GeofenceStatusCodes.getErrorString(geofencingEvent.errorCode)
-            Log.e(tag, "errorMessage")
             return
         }
 

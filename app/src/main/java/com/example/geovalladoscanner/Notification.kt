@@ -25,7 +25,7 @@ fun createNotificationChannel(context: Context) {
             it.enableLights(true)
             it.lightColor = Color.RED
             it.enableVibration(true)
-            it.vibrationPattern = longArrayOf(300, 200, 300)
+            it.vibrationPattern = longArrayOf(400, 200, 300, 200, 300)
             it
         }
 
@@ -50,7 +50,7 @@ fun sendNotification(context: Context, geofenceTransitionDetails: String) {
         .setContentTitle("Activación geovallado")
         .setContentText(geofenceTransitionDetails)
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        .setVibrate(longArrayOf(100, 200, 300))
+        .setVibrate(longArrayOf(400, 200, 300, 200, 300))
 
         // Set the intent that will fire when the user taps the notification
         .setContentIntent(pendingIntent)

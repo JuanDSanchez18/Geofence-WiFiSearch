@@ -7,10 +7,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
-import android.util.Log
+import android.provider.Settings
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -22,8 +23,6 @@ import java.util.*
 
 //https://github.com/Damian9696/Geofences/blob/master/app/src/main/java/com/example/android/treasureHunt/HuntMainActivity.kt
 class MainActivity : AppCompatActivity() {
-
-    private val tag = "MainActivity"
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
@@ -47,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         geofencingClient = LocationServices.getGeofencingClient(this)
 
         createNotificationChannel(this)
-
+        ignoreBatteryOptimization()
 
     }
 
@@ -85,15 +84,11 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_BACKGROUND_LOCATION),
                 22
             )
 
-            val permissionAccessCourseLocationApproved = ActivityCompat
-                .checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                    PackageManager.PERMISSION_GRANTED
             val permissionAccessFineLocationApproved = ActivityCompat
                 .checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                     PackageManager.PERMISSION_GRANTED
@@ -102,26 +97,19 @@ class MainActivity : AppCompatActivity() {
                 .checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) ==
                     PackageManager.PERMISSION_GRANTED
 
-            return permissionAccessCourseLocationApproved && permissionAccessFineLocationApproved
-                    && backgroundLocationPermissionApproved
+            return  permissionAccessFineLocationApproved && backgroundLocationPermissionApproved
 
         }else {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.ACCESS_FINE_LOCATION),
                 22
             )
 
-            val permissionAccessCourseLocationApproved = ActivityCompat
-                .checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                    PackageManager.PERMISSION_GRANTED
-            val permissionAccessFineLocationApproved = ActivityCompat
+            return ActivityCompat
                 .checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                     PackageManager.PERMISSION_GRANTED
-
-            return permissionAccessCourseLocationApproved && permissionAccessFineLocationApproved
 
         }
     }
@@ -145,8 +133,6 @@ class MainActivity : AppCompatActivity() {
             // All location settings are satisfied. The client can initialize
             // location requests here.
             // ...
-            Log.i(tag, "Success check settings")
-
             addGeofences()
 
         }
@@ -168,7 +154,7 @@ class MainActivity : AppCompatActivity() {
                 } catch (sendEx: IntentSender.SendIntentException) {
                     // Ignore the error.
                     //sendEx.printStackTrace()
-                    Log.e(tag, "Error getting location settings resolution: " + sendEx.message)
+
                 }
             }
         }
@@ -182,11 +168,11 @@ class MainActivity : AppCompatActivity() {
                 // Geofences added
                 addedGeofence = true
                 Toast.makeText(this@MainActivity, "Added geofences", Toast.LENGTH_SHORT).show()
-                Log.i(tag, "Adding geofences")
+
             }
             addOnFailureListener {
                 // Failed to add geofences
-                Log.e(tag, "Fail adding geofences")
+
             }
         }
     }
@@ -199,7 +185,6 @@ class MainActivity : AppCompatActivity() {
         for (station in GeofenceConstants.Station_TM) {//posible error
 
             //val constants = GeofencingConstants.LANDMARK_DATA[i]
-            Log.i(tag, "Add geofences: ${station.key}")
 
             geofenceList.add(
                 Geofence.Builder()
@@ -239,11 +224,11 @@ class MainActivity : AppCompatActivity() {
         geofencingClient.removeGeofences(geofencePendingIntent)?.run {
             addOnSuccessListener {
                 // Geofences removed
-                Log.i(tag, "Removing geofences")
+
             }
             addOnFailureListener {
                 // Failed to remove geofences
-                Log.e(tag, "Fail removing geofences")
+
             }
         }
     }
@@ -264,6 +249,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("BatteryLife")
+    private fun ignoreBatteryOptimization() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val intent = Intent()
+            val packageName: String = packageName
+            val pm =
+                getSystemService(Context.POWER_SERVICE) as PowerManager
+            if (pm.isIgnoringBatteryOptimizations(packageName)) {
+                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                intent.data = Uri.parse("package:$packageName")
+                startActivity(intent)
+            }
+        }
+    }
+
     private lateinit var wakeLock: PowerManager.WakeLock
     private var wakeLockOn = false
     override fun onPause() {
@@ -276,6 +276,7 @@ class MainActivity : AppCompatActivity() {
             }
         wakeLockOn = true
     }
+
 
     override fun onResume() {
         super.onResume()
