@@ -2,8 +2,10 @@ package com.example.geovalladoscanner
 
 import android.annotation.SuppressLint
 import android.app.Service
-import android.content.*
-import android.content.pm.PackageManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.location.LocationManager
 import android.net.Uri
 import android.net.wifi.WifiManager
@@ -35,7 +37,7 @@ private var isRepetitiveScan = false
 private var isSSID = false
 private var numberOfSSID = 0
 
-private var repetitiveDelay = 35 * 1000
+private var repetitiveDelay = 40 * 1000
 private var isChangeRepetitivedelay = false
 
 private val apSSIDlist = listOf("Esp32_Serial1", "Network 25","2","3")
@@ -52,7 +54,7 @@ class ScannerWifiService : Service() {
             when (intent.action) {
                 Actions.ENTER.name -> {
                     isGeofence = true
-                    repetitiveDelay = 35 * 1000
+                    repetitiveDelay = 40 * 1000
                     if (!isRepetitiveScan){
                         geofenceEnter()
                     }else if (isChangeRepetitivedelay){
@@ -87,6 +89,12 @@ class ScannerWifiService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notification = notificationForeground(this)
             startForeground(notificationId, notification)
+        }
+
+        (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+            newWakeLock(PowerManager.FULL_WAKE_LOCK, "MyApp::MyWakelockTag").apply {
+                acquire(50 * 1000)
+            }
         }
     }
 
@@ -255,7 +263,6 @@ class ScannerWifiService : Service() {
     }
 
 }
-/*OTRA MIERDA MÁS*/
 
 /*
 References

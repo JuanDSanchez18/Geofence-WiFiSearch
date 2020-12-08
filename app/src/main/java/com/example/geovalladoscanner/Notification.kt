@@ -25,7 +25,7 @@ fun createNotificationChannel(context: Context) {
             it.enableLights(true)
             it.lightColor = Color.RED
             it.enableVibration(true)
-            it.vibrationPattern = longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
+            it.vibrationPattern = longArrayOf(300, 200, 300, 200)
             it
         }
 

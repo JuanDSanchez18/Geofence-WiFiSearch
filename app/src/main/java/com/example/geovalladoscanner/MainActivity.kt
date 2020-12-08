@@ -12,12 +12,12 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.util.Log
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
-import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 
 //https://github.com/Damian9696/Geofences/blob/master/app/src/main/java/com/example/android/treasureHunt/HuntMainActivity.kt
@@ -51,13 +51,17 @@ class MainActivity : AppCompatActivity() {
 
         createNotificationChannel(this)
 
-        if (checkPermissions()) {
-            createLocationRequestAndcheckSettings()
-        }
+
     }
 
+    private var addedGeofence = false
     override fun onStart() {
         super.onStart()
+
+        if (!addedGeofence and checkPermissions()) {
+            createLocationRequestAndcheckSettings()
+        }
+
         //Buttons
         findViewById<Button>(R.id.enterGeofence).let {
             it.setOnClickListener {
@@ -132,6 +136,7 @@ class MainActivity : AppCompatActivity() {
             Log.i(tag, "Success check settings")
 
             addGeofences()
+
         }
 
         task.addOnFailureListener { exception ->
@@ -163,7 +168,8 @@ class MainActivity : AppCompatActivity() {
         geofencingClient.addGeofences(createGeofence(), geofencePendingIntent)?.run {
             addOnSuccessListener {
                 // Geofences added
-                scanReport.text = getString(R.string.wait_geofence)
+                addedGeofence = true
+                Toast.makeText(this@MainActivity, "Added geofences", Toast.LENGTH_SHORT).show()
                 Log.i(tag, "Adding geofences")
             }
             addOnFailureListener {
@@ -247,6 +253,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var wakeLock: PowerManager.WakeLock
+    private var wakeLockOn = false
     override fun onPause() {
         super.onPause()
         wakeLock =
@@ -255,12 +262,15 @@ class MainActivity : AppCompatActivity() {
                     acquire(10*60*1000L /*10 minutes*/)
                 }
             }
+        wakeLockOn = true
     }
 
     override fun onResume() {
         super.onResume()
-        wakeLock.release()
-    }
+        if (wakeLockOn)
+            if (wakeLock.isHeld) wakeLock.release()
+
+   }
 }
 
 
