@@ -269,7 +269,6 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         if (wakeLockOn)
             if (wakeLock.isHeld) wakeLock.release()
-
    }
 }
 

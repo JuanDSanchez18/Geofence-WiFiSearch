@@ -9,7 +9,7 @@ internal object GeofenceConstants {
 
     val Station_TM = arrayOf(
 
-        StationDataObject(
+        /*StationDataObject(
             "Calle45",
             LatLng(5.7541223, -75.0985158)
         ),
@@ -24,7 +24,7 @@ internal object GeofenceConstants {
             LatLng(4.8541223,
             -76.0985158)
         ),
-
+        */
         StationDataObject(
             "Casa",
             LatLng(4.7541223,
@@ -41,5 +41,5 @@ internal object GeofenceConstants {
 
     val GEOFENCE_EXPIRATION_IN_MILLISECONDS: Long = TimeUnit.HOURS.toMillis(1)
     const val GEOFENCE_DWELL_TIME = 8 * 60 * 1000 // 8 minutes
-    const val GEOFENCE_RADIUS_IN_METERS = 40f // 50 meters
+    const val GEOFENCE_RADIUS_IN_METERS = 50f // 50 meters
 }

@@ -40,7 +40,7 @@ private var numberOfSSID = 0
 private var repetitiveDelay = 40 * 1000
 private var isChangeRepetitivedelay = false
 
-private val apSSIDlist = listOf("Esp32_Serial1", "Network 25","2","3")
+private val apSSIDlist = listOf("Esp32_Calle45","Esp32_Marly" ,"Network 25","2","3")
 private val capApList: MutableList<String> = mutableListOf()
 private val repetitiveAplist : MutableList<Int> = mutableListOf()
 private var countSSID = 0
@@ -91,11 +91,6 @@ class ScannerWifiService : Service() {
             startForeground(notificationId, notification)
         }
 
-        (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
-            newWakeLock(PowerManager.FULL_WAKE_LOCK, "MyApp::MyWakelockTag").apply {
-                acquire(50 * 1000)
-            }
-        }
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -121,8 +116,9 @@ class ScannerWifiService : Service() {
     @SuppressLint("ShortAlarm")
     private fun geofenceEnter() {
         ignoreBatteryOptimization()
-        initializeScanWifi()
         initializeWLocks()
+        startWLock()
+        initializeScanWifi()
         repetitiveScanWifi()
     }
     @SuppressLint("BatteryLife")
@@ -140,6 +136,29 @@ class ScannerWifiService : Service() {
         }
     }
 
+
+    private fun initializeWLocks() {
+        wakeLock =
+            (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+                newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::MyWakelockTag")
+            }
+
+        wifiLock =
+            (applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).run {
+                createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "MyApp::MyWifilockTag")
+            }
+    }
+
+    private fun startWLock() {
+        wakeLock.acquire()
+        wifiLock.acquire()
+    }
+
+    private fun stopWLock() {
+        if (wakeLock.isHeld) wakeLock.release()
+        if (wifiLock.isHeld) wifiLock.release()
+    }
+
     private fun initializeScanWifi() {
         wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         locationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -147,22 +166,6 @@ class ScannerWifiService : Service() {
         val intentFilter = IntentFilter()
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
         registerReceiver(wifiScanReceiver, intentFilter)
-    }
-
-    private fun initializeWLocks() {
-        wakeLock = if (runningOOrLater) {
-            (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
-                newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::MyWakelockTag")
-            }
-        } else {
-            (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
-                newWakeLock(PowerManager.FULL_WAKE_LOCK, "MyApp::MyWakelockTag")
-            }
-        }
-        wifiLock =
-            (applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).run {
-                createWifiLock(WifiManager.WIFI_MODE_SCAN_ONLY, "MyApp::MyWifilockTag")
-            }
     }
 
     private fun repetitiveScanWifi() {
@@ -200,16 +203,6 @@ class ScannerWifiService : Service() {
                 }
             }
         }
-    }
-
-    private fun startWLock() {
-        wakeLock.acquire()
-        wifiLock.acquire()
-    }
-
-    private fun stopWLock() {
-        if (wakeLock.isHeld) wakeLock.release()
-        if (wifiLock.isHeld) wifiLock.release()
     }
 
     private fun scanSuccess() {

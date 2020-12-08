@@ -32,7 +32,8 @@
         <receiver
             android:name=".GeofenceBroadcastReceiver"
             android:exported="true"
-            android:permission="TODO" />
+            android:permission="TODO"
+            />
 
         <service android:name=".ScannerWifiService"
             android:process=":scannerWifiService"/>
