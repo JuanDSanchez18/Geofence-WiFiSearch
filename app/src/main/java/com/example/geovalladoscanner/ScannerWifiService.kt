@@ -20,10 +20,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
-private val runningOOrLater =
-    Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-
 private lateinit var aContext: Context
 
 private lateinit var wifiManager: WifiManager
