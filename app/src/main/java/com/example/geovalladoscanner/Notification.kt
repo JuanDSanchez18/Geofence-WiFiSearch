@@ -50,7 +50,7 @@ fun sendNotification(context: Context, geofenceTransitionDetails: String) {
         .setContentTitle("Activación geovallado")
         .setContentText(geofenceTransitionDetails)
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        .setVibrate(longArrayOf(400, 200, 300, 200, 300))
+        .setVibrate(longArrayOf(400, 200, 300, 200, 300, 200, 300))
 
         // Set the intent that will fire when the user taps the notification
         .setContentIntent(pendingIntent)
