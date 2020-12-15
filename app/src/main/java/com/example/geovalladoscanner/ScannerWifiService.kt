@@ -17,27 +17,24 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-private lateinit var aContext: Context
-
 private lateinit var wifiManager: WifiManager
 private lateinit var wakeLock: PowerManager.WakeLock
-private lateinit var wifiLock: WifiManager.WifiLock
 
 private lateinit var locationManager: LocationManager
 
 private var isGeofence = false
 private var isRepetitiveScan = false
-private var isSSID = false
 private var numberOfSSID = 0
 
-private var repetitiveDelay = 32 * 1000
+private const val defaultRepetitiveDelay = 31 * 1000
+private const val changeRepetitiveDelay = 2 * 60 * 1000
+private var repetitiveDelay = 0
 private var isChangeRepetitivedelay = false
 
 private val apSSIDlist = listOf("Esp32_Calle45", "Esp32_Marly")
-private val capApList: MutableList<String> = mutableListOf()
-private val repetitiveAplist : MutableList<Int> = mutableListOf()
+private var capApList: MutableList<String> = mutableListOf()
+private var repetitiveAplist : MutableList<Int> = mutableListOf()
 private var nearestAp: String = ""
-private var countSSID = 0
 private var outSSID = 0
 
 class ScannerWifiService : Service() {
@@ -47,7 +44,7 @@ class ScannerWifiService : Service() {
             when (intent.action) {
                 Actions.ENTER.name -> {
                     isGeofence = true
-                    repetitiveDelay = 32 * 1000
+                    repetitiveDelay = defaultRepetitiveDelay
                     if (!isRepetitiveScan) {
                         sendForegroundNotification()
                         geofenceEnter()
@@ -58,14 +55,13 @@ class ScannerWifiService : Service() {
                 }
                 Actions.DWELL.name -> {
                     if (!isChangeRepetitivedelay) {
-                        repetitiveDelay = 2 * 60 * 1000
+                        repetitiveDelay = changeRepetitiveDelay
                         isChangeRepetitivedelay = true
                     }
                 }
                 Actions.EXIT.name -> {
                     if (isGeofence) {
                         isGeofence = false
-                        countSSID = 0
                     }
                 }
                 Actions.ENDSERVICE.name -> {
@@ -86,15 +82,14 @@ class ScannerWifiService : Service() {
     private val wifiScanReceiver = object : BroadcastReceiver() {
         @RequiresApi(Build.VERSION_CODES.M)
         override fun onReceive(context: Context, intent: Intent) {
-            aContext = context
             val success = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false)
             if (success) {
                 Toast.makeText(context, "Success Scan", Toast.LENGTH_SHORT).show()
                 scanSuccess()
             }
-            else Toast.makeText(context, "Fail Scan", Toast.LENGTH_SHORT).show()
         }
     }
+
     private fun sendForegroundNotification(){
         val notificationId = 420
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -106,7 +101,6 @@ class ScannerWifiService : Service() {
     @SuppressLint("ShortAlarm")
     private fun geofenceEnter() {
         initializeWLocks()
-        startWLock()
         initializeScanWifi()
         repetitiveScanWifi()
     }
@@ -114,23 +108,18 @@ class ScannerWifiService : Service() {
     private fun initializeWLocks() {
         wakeLock =
             (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
-                newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::MyWakelockTag")
-            }
-
-        wifiLock =
-            (applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).run {
-                createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "MyApp::MyWifilockTag")
+                newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::MyWakelockTag").apply {
+                    acquire(10*60*1000L /*10 minutes*/)
+                }
             }
     }
 
     private fun startWLock() {
-        wakeLock.acquire()
-        wifiLock.acquire()
+        wakeLock.acquire(10*60*1000L /*10 minutes*/)
     }
 
     private fun stopWLock() {
         if (wakeLock.isHeld) wakeLock.release()
-        if (wifiLock.isHeld) wifiLock.release()
     }
 
     private fun initializeScanWifi() {
@@ -147,7 +136,7 @@ class ScannerWifiService : Service() {
         GlobalScope.launch(Dispatchers.IO) {
             while (isRepetitiveScan) {
                 launch(Dispatchers.IO) {
-                    if (!wakeLock.isHeld or !wifiLock.isHeld)
+                    if (!wakeLock.isHeld)
                         startWLock()
                     startWifiScan()
                 }
@@ -159,14 +148,12 @@ class ScannerWifiService : Service() {
     private fun startWifiScan () {
         var ready = true
         val myContext: Context = this
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            if (!locationManager.isLocationEnabled) {
-                ready = false
-                Handler(Looper.getMainLooper()).post {
-                    Toast.makeText(myContext, "Required GPS", Toast.LENGTH_LONG).show()
-                }
-                stopService()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !locationManager.isLocationEnabled) {
+            ready = false
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(myContext, "Required GPS", Toast.LENGTH_LONG).show()
             }
+            stopService()
         }
         if (ready) {
             val success = wifiManager.startScan()
@@ -179,29 +166,32 @@ class ScannerWifiService : Service() {
     }
 
     private fun scanSuccess() {
-        isSSID = false
-        var numSSID = 0
         val results = wifiManager.scanResults
+
+        var isSSID = false
+        var numSSID = 0
         var inirssi = -200
         var apnearest = ""
+
         for (result in results) {
-            if (result.SSID in apSSIDlist) {
-                if (result.SSID in capApList) {
-                    val index = capApList.indexOf(result.SSID)
-                    countSSID = repetitiveAplist[index] + 1
+            val apssid = result.SSID
+            if (apssid in apSSIDlist) {
+                if (apssid in capApList) {
+                    val index = capApList.indexOf(apssid)
+                    val countSSID = repetitiveAplist[index] + 1
                     repetitiveAplist[index] = countSSID
-                    if (countSSID == 15) { // ~= 360 s = 6 min
-                        repetitiveDelay = 2 * 60 * 1000
+                    if (countSSID >= 15 && !isChangeRepetitivedelay) { // ~= 465 s = 7,75 min
+                        repetitiveDelay = changeRepetitiveDelay
                         isChangeRepetitivedelay = true
                     }
                 }else {
-                    capApList.add(result.SSID)
+                    capApList.add(apssid)
                     repetitiveAplist.add(0)
                 }
                 val rssi = result.level
                 if (rssi > inirssi) {
                     inirssi = rssi
-                    apnearest = result.SSID
+                    apnearest = apssid
                 }
                 numSSID += 1
             }
@@ -209,23 +199,25 @@ class ScannerWifiService : Service() {
 
         if (numSSID  >  0) {
             isSSID = true
-            outSSID = 0
-            if (numSSID != numberOfSSID) {
+            if (outSSID > 0) {
+                outSSID = 0
+                repetitiveDelay = 31 * 1000
+                isChangeRepetitivedelay = false
+            }
+            if (numSSID != numberOfSSID)
                 numberOfSSID = numSSID
-            }
-            if (nearestAp != apnearest) {
+
+            if (nearestAp != apnearest)
                 nearestAp = apnearest
-            }
+
         }
 
         if (!isSSID and !isGeofence) {
             outSSID++
-            if (isChangeRepetitivedelay) {
-                repetitiveDelay = 30 * 1000
-                isChangeRepetitivedelay = false
-                repetitiveScanWifi()
-            }
-            if (outSSID == 3)  
+            if (outSSID == 1)
+                repetitiveDelay = 20 * 1000
+
+            if (outSSID == 3)
                 stopService()
         }
     }

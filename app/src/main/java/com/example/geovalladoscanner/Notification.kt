@@ -54,7 +54,7 @@ fun sendNotification(context: Context, geofenceTransitionDetails: String) {
 
         // Set the intent that will fire when the user taps the notification
         .setContentIntent(pendingIntent)
-        //.setAutoCancel(true)
+        .setAutoCancel(true)
 
     with(NotificationManagerCompat.from(context)) {
         // notificationId is a unique int for each notification that you must define
@@ -72,6 +72,8 @@ fun notificationForeground(context: Context): Notification {
 
     return Notification.Builder(context, channelId)
         .setSmallIcon(R.drawable.geofence_icon)
+        .setColor(Color.YELLOW)
+        .setShowWhen(true)
         .setContentTitle("Activación geovallado")
         .setContentText("Empieza scan Wifi")
         .setContentIntent(pendingIntent)

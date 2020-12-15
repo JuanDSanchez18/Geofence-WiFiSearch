@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
 
         if (!addedGeofence and checkPermissions()) {
-            createLocationRequestAndcheckSettings()
+            createLocationRequestAndCheckSettings()
         }
 
         //Buttons
@@ -114,12 +114,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun createLocationRequestAndcheckSettings() {
+    private fun createLocationRequestAndCheckSettings() {
 
         locationRequest = LocationRequest.create()?.apply {
-            interval = 20 * 1000  //revisar
-            fastestInterval = 15 * 1000
-            maxWaitTime = 40 * 1000
+            //interval = 20 * 1000  //revisar
+            //fastestInterval = 15 * 1000
+            //maxWaitTime = 40 * 1000
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }!!
 
