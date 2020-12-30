@@ -84,7 +84,7 @@ class ScannerWifiService : Service() {
         override fun onReceive(context: Context, intent: Intent) {
             val success = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false)
             if (success) {
-                Toast.makeText(context, "Success Scan", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(context, "Success Scan", Toast.LENGTH_SHORT).show()
                 scanSuccess()
             }
         }
@@ -148,6 +148,7 @@ class ScannerWifiService : Service() {
     private fun startWifiScan () {
         var ready = true
         val myContext: Context = this
+        var messageScan = "Success active scan"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !locationManager.isLocationEnabled) {
             ready = false
             Handler(Looper.getMainLooper()).post {
@@ -158,9 +159,10 @@ class ScannerWifiService : Service() {
         if (ready) {
             val success = wifiManager.startScan()
             if (!success) {
-                Handler(Looper.getMainLooper()).post {
-                    Toast.makeText(myContext, "Something wrong", Toast.LENGTH_LONG).show()
-                }
+                messageScan = "Something wrong"
+            }
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(myContext, messageScan, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -201,8 +203,6 @@ class ScannerWifiService : Service() {
             isSSID = true
             if (outSSID > 0) {
                 outSSID = 0
-                repetitiveDelay = 31 * 1000
-                isChangeRepetitivedelay = false
             }
             if (numSSID != numberOfSSID)
                 numberOfSSID = numSSID
@@ -212,11 +212,12 @@ class ScannerWifiService : Service() {
 
         }
 
+        // Si no está en el geovallado y no tiene SSID de la lista
         if (!isSSID and !isGeofence) {
             outSSID++
-            if (outSSID == 1)
+            /*if (outSSID == 1)
                 repetitiveDelay = 20 * 1000
-
+            */
             if (outSSID == 3)
                 stopService()
         }

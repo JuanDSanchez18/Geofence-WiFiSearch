@@ -33,9 +33,11 @@ class MainActivity : AppCompatActivity() {
     //Receptor de emisión para las transiciones de geovallado
     private val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
+        intent.action = ".ACTION_RECEIVE_GEOFENCE"
         // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
         // addGeofences() and removeGeofences().
         PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -117,9 +119,9 @@ class MainActivity : AppCompatActivity() {
     private fun createLocationRequestAndCheckSettings() {
 
         locationRequest = LocationRequest.create()?.apply {
-            //interval = 20 * 1000  //revisar
-            //fastestInterval = 15 * 1000
-            //maxWaitTime = 40 * 1000
+            interval = 20 * 1000  //revisar
+            fastestInterval = 15 * 1000
+            maxWaitTime = 40 * 1000
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }!!
 
@@ -156,6 +158,7 @@ class MainActivity : AppCompatActivity() {
                     //sendEx.printStackTrace()
 
                 }
+
             }
         }
     }
@@ -249,6 +252,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
     @SuppressLint("BatteryLife")
     private fun ignoreBatteryOptimization() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -268,8 +272,7 @@ class MainActivity : AppCompatActivity() {
     private var wakeLockOn = false
     override fun onPause() {
         super.onPause()
-        wakeLock =
-            (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+        wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
                 newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::MyWakelockTag").apply {
                     acquire(10*60*1000L /*10 minutes*/)
                 }
@@ -277,12 +280,12 @@ class MainActivity : AppCompatActivity() {
         wakeLockOn = true
     }
 
-
     override fun onResume() {
         super.onResume()
         if (wakeLockOn)
             if (wakeLock.isHeld) wakeLock.release()
    }
+
 }
 
 

@@ -3,9 +3,10 @@
 xmlns:tools="http://schemas.android.com/tools"
 package="com.example.geovalladoscanner">
 
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
 
@@ -32,11 +33,15 @@ package="com.example.geovalladoscanner">
 
     <receiver
         android:name=".GeofenceBroadcastReceiver"
-        android:exported="true"
-        android:permission="TODO" />
+        android:permission="TODO">
+        <intent-filter android:priority="999">
+            <action android:name=".ACTION_RECEIVE_GEOFENCE" />
+        </intent-filter>
+    </receiver>
 
     <service android:name=".ScannerWifiService"
         android:process=":scannerWifiService"/>
+
 
 </application>
 
