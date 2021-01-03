@@ -35,7 +35,7 @@ fun createNotificationChannel(context: Context) {
     }
 }
 
-fun sendNotification(context: Context, geofenceTransitionDetails: String) {
+fun notification(context: Context) {
 
     // Create an explicit intent for an Activity in your app
     val intent = Intent(context, MainActivity::class.java).apply {
@@ -48,7 +48,7 @@ fun sendNotification(context: Context, geofenceTransitionDetails: String) {
         //https://walkiriaapps.com/blog/android/iconos-notificaciones-android-studio/
         .setSmallIcon(R.drawable.geofence_icon)
         .setContentTitle("Activación geovallado")
-        .setContentText(geofenceTransitionDetails)
+        .setContentText("Empieza scan Wifi")
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         .setVibrate(longArrayOf(400, 200, 300, 200, 300, 200, 300))
 

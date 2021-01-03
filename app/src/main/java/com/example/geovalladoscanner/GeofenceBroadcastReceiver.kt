@@ -22,12 +22,6 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         // Test that the reported transition was of interest.
         when (geofenceEvent.geofenceTransition) {
             Geofence.GEOFENCE_TRANSITION_ENTER -> {
-                val triggeringGeofences = geofenceEvent.triggeringGeofences
-
-                // Get the transition details as a String.
-                val geofenceTransitionDetails = getGeofenceTransitionDetails(
-                    triggeringGeofences
-                )
 
                 Intent(context, ScannerWifiService::class.java).also {
                     it.action = Actions.ENTER.name
@@ -35,9 +29,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                         context.startForegroundService(it)
                         return
                     }
-                    sendNotification(context, geofenceTransitionDetails)
                     context.startService(it)
-
                 }
             }
             Geofence.GEOFENCE_TRANSITION_DWELL -> {
@@ -60,20 +52,6 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                 }
             }
         }
-    }
-
-    private fun getGeofenceTransitionDetails(
-        triggeringGeofences: MutableList<Geofence>
-    ): String {
-
-        // Get the Ids of each geofence that was triggered.
-        val triggeringGeofencesIdsList: ArrayList<String> = arrayListOf()
-        for (geofence in triggeringGeofences) {
-            triggeringGeofencesIdsList.add(geofence.requestId)
-        }
-        val triggeringGeofencesIdsString = TextUtils.join(", ", triggeringGeofencesIdsList)
-
-        return "Geovallado: $triggeringGeofencesIdsString \n Empieza Scan Wifi."
     }
 }
 

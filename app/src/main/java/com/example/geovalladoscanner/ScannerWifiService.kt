@@ -26,7 +26,7 @@ private var isGeofence = false
 private var isRepetitiveScan = false
 private var numberOfSSID = 0
 
-private const val defaultRepetitiveDelay = 31 * 1000
+private const val defaultRepetitiveDelay = 30 * 1000
 private const val changeRepetitiveDelay = 2 * 60 * 1000
 private var repetitiveDelay = 0
 private var isChangeRepetitivedelay = false
@@ -95,6 +95,8 @@ class ScannerWifiService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notification = notificationForeground(this)
             startForeground(notificationId, notification)
+        } else {
+            notification(this)
         }
     }
 
@@ -230,7 +232,6 @@ class ScannerWifiService : Service() {
             stopForeground(true)
         }else stopSelf()
     }
-
 }
 
 /*
