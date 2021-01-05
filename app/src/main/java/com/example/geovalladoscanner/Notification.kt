@@ -48,7 +48,7 @@ fun notification(context: Context) {
         //https://walkiriaapps.com/blog/android/iconos-notificaciones-android-studio/
         .setSmallIcon(R.drawable.geofence_icon)
         .setContentTitle("Activación geovallado")
-        .setContentText("Empieza scan Wifi")
+        .setContentText("Empezó búsqueda activa de Wifi")
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         .setVibrate(longArrayOf(400, 200, 300, 200, 300, 200, 300))
 
@@ -75,7 +75,7 @@ fun notificationForeground(context: Context): Notification {
         .setColor(Color.YELLOW)
         .setShowWhen(true)
         .setContentTitle("Activación geovallado")
-        .setContentText("Empieza scan Wifi")
+        .setContentText("Empezó búsqueda activa de Wifi")
         .setContentIntent(pendingIntent)
         .setTicker("Ticket Text")
         .build()

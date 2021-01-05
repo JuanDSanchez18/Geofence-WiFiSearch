@@ -7,8 +7,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.location.LocationManager
+import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.*
+import android.provider.Settings
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import kotlinx.coroutines.Dispatchers
@@ -54,10 +56,10 @@ class ScannerWifiService : Service() {
                     isChangeRepetitivedelay = false
                 }
                 Actions.DWELL.name -> {
-                    if (!isChangeRepetitivedelay) {
+                    /*if (!isChangeRepetitivedelay) {
                         repetitiveDelay = changeRepetitiveDelay
                         isChangeRepetitivedelay = true
-                    }
+                    }*/
                 }
                 Actions.EXIT.name -> {
                     if (isGeofence) {
@@ -102,9 +104,27 @@ class ScannerWifiService : Service() {
 
     @SuppressLint("ShortAlarm")
     private fun geofenceEnter() {
+        ignoreBatteryOptimization()
         initializeWLocks()
         initializeScanWifi()
         repetitiveScanWifi()
+    }
+
+    private fun ignoreBatteryOptimization() {
+        //https://stackoverflow.com/questions/32316491/network-access-in-doze-mode
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm =
+                getSystemService(Context.POWER_SERVICE) as PowerManager
+            if (pm.isDeviceIdleMode) {
+                val intent = Intent()
+                val packageName: String = packageName
+                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                    intent.data = Uri.parse("package:$packageName")
+                }
+                startActivity(intent)
+            }
+        }
     }
 
     private fun initializeWLocks() {
@@ -162,6 +182,7 @@ class ScannerWifiService : Service() {
             val success = wifiManager.startScan()
             if (!success) {
                 messageScan = "Something wrong"
+                ignoreBatteryOptimization()
             }
             Handler(Looper.getMainLooper()).post {
                 Toast.makeText(myContext, messageScan, Toast.LENGTH_SHORT).show()
@@ -184,10 +205,10 @@ class ScannerWifiService : Service() {
                     val index = capApList.indexOf(apssid)
                     val countSSID = repetitiveAplist[index] + 1
                     repetitiveAplist[index] = countSSID
-                    if (countSSID >= 15 && !isChangeRepetitivedelay) { // ~= 465 s = 7,75 min
+                    /*if (countSSID >= 15 && !isChangeRepetitivedelay) { // ~= 465 s = 7,75 min
                         repetitiveDelay = changeRepetitiveDelay
                         isChangeRepetitivedelay = true
-                    }
+                    }*/
                 }else {
                     capApList.add(apssid)
                     repetitiveAplist.add(0)
