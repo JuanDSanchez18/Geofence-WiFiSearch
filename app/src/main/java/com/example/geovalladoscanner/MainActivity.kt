@@ -280,7 +280,6 @@ class MainActivity : AppCompatActivity() {
             startService(it)
         }
     }
-
 }
 
 
