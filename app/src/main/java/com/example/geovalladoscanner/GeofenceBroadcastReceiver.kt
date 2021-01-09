@@ -1,3 +1,11 @@
+/* Aplicación GeovalladoScanner
+GeofenceBroadcastReceiver.kt
+ * Receptor que espera las transiciones de geovallado.
+    * Entrada.
+        Inicia Servicio. Si es Andorid > 8, servicio en primer plano.
+    * Permanencia
+    * Salida
+*/
 package com.example.geovalladoscanner
 
 import android.content.BroadcastReceiver
@@ -21,7 +29,6 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         // Test that the reported transition was of interest.
         when (geofenceEvent.geofenceTransition) {
             Geofence.GEOFENCE_TRANSITION_ENTER -> {
-
                 Intent(context, ScannerWifiService::class.java).also {
                     it.action = Actions.ENTER.name
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

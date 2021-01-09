@@ -1,3 +1,17 @@
+/* Aplicación GeovalladoScanner
+ScannerWifiService.kt
+ * Servicio iniciado con activación del geovallado.
+    * Entrada.
+        Manda notificación al usuario.
+        Inicializa busqueda de Wifi. (Necesario)
+        Inicia Busqueda de Wifi repetitiva. (31 s)
+    * Permanencia
+        Cambia la repetición a 2 minutos.
+    * Salida
+        Cambia bandera de geovallado.
+ * Sevicio muere cuando no se está dentro del geovallado y no se recibe algún SSID de la lista.
+
+*/
 package com.example.geovalladoscanner
 
 import android.annotation.SuppressLint
@@ -80,7 +94,6 @@ class ScannerWifiService : Service() {
     }
 
     // Scanner Wifi code
-
     private val wifiScanReceiver = object : BroadcastReceiver() {
         @RequiresApi(Build.VERSION_CODES.M)
         override fun onReceive(context: Context, intent: Intent) {
@@ -110,6 +123,7 @@ class ScannerWifiService : Service() {
         repetitiveScanWifi()
     }
 
+    @SuppressLint("BatteryLife")
     private fun ignoreBatteryOptimization() {
         //https://stackoverflow.com/questions/32316491/network-access-in-doze-mode
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -256,9 +270,7 @@ class ScannerWifiService : Service() {
 }
 
 /*
-References
-https://robertohuertas.com/2019/06/29/android_foreground_services/
-
+Referencias
+ * Servicio primer plano
+    https://robertohuertas.com/2019/06/29/android_foreground_services/
 */
-
-//probar sin wlock

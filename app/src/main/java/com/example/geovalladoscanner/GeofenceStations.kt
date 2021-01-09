@@ -1,3 +1,8 @@
+/* Aplicación GeovalladoScanner
+GeofenceStations.kt
+ * Define latitud y longitud de cada geovalaldo (estación de TM), el radio para todos y el tiempo
+ considerado como permanenecia para la trasición.
+*/
 package com.example.geovalladoscanner
 
 import com.google.android.gms.maps.model.LatLng

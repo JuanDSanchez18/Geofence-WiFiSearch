@@ -1,3 +1,12 @@
+/* Aplicación GeovalladoScanner
+MainActivity.kt
+ * Solicita permisos de localización.
+    https://developer.android.com/training/permissions/requesting?hl=es-419
+ * Añade geovallados y receptor de transiciones de este.
+    https://developer.android.com/training/location/geofencing?hl=es
+ * Inicia WakeLock
+*/
+
 package com.example.geovalladoscanner
 
 import android.Manifest
@@ -49,7 +58,6 @@ class MainActivity : AppCompatActivity() {
 
         createNotificationChannel(this)
         ignoreBatteryOptimization()
-
     }
 
     private var addedGeofence = false
@@ -80,8 +88,6 @@ class MainActivity : AppCompatActivity() {
 
     //request permission Q
     private fun checkPermissions(): Boolean {
-
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ActivityCompat.requestPermissions(
                 this,
@@ -112,12 +118,10 @@ class MainActivity : AppCompatActivity() {
             return ActivityCompat
                 .checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                     PackageManager.PERMISSION_GRANTED
-
         }
     }
 
     private fun createLocationRequestAndCheckSettings() {
-
         locationRequest = LocationRequest.create()?.apply {
             interval = 20 * 1000  //revisar
             fastestInterval = 15 * 1000
@@ -136,11 +140,9 @@ class MainActivity : AppCompatActivity() {
             // location requests here.
             // ...
             addGeofences()
-
         }
 
         task.addOnFailureListener { exception ->
-
             if (exception is ResolvableApiException) {
                 // Location settings are not satisfied, but this can be fixed
                 // by showing the user a dialog.
@@ -151,44 +153,33 @@ class MainActivity : AppCompatActivity() {
                         this@MainActivity,
                         29
                     )//REQUEST_CHECK_SETTINGS
-
-
                 } catch (sendEx: IntentSender.SendIntentException) {
                     // Ignore the error.
                     //sendEx.printStackTrace()
-
                 }
-
             }
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun addGeofences() {
-
         geofencingClient.addGeofences(createGeofence(), geofencePendingIntent)?.run {
             addOnSuccessListener {
                 // Geofences added
                 addedGeofence = true
                 Toast.makeText(this@MainActivity, "Added geofences", Toast.LENGTH_SHORT).show()
-
             }
             addOnFailureListener {
                 // Failed to add geofences
-
             }
         }
     }
 
     //Crear georefencia
     private fun createGeofence(): GeofencingRequest? {
-
         val geofenceList: ArrayList<Geofence> = arrayListOf()
 
-        for (station in GeofenceConstants.Station_TM) {//posible error
-
-            //val constants = GeofencingConstants.LANDMARK_DATA[i]
-
+        for (station in GeofenceConstants.Station_TM) {
             geofenceList.add(
                 Geofence.Builder()
                     // Set the request ID of the geofence. This is a string to identify this
@@ -227,11 +218,9 @@ class MainActivity : AppCompatActivity() {
         geofencingClient.removeGeofences(geofencePendingIntent)?.run {
             addOnSuccessListener {
                 // Geofences removed
-
             }
             addOnFailureListener {
                 // Failed to remove geofences
-
             }
         }
     }
@@ -251,7 +240,6 @@ class MainActivity : AppCompatActivity() {
             startService(it)
         }
     }
-
 
     @SuppressLint("BatteryLife")
     private fun ignoreBatteryOptimization() {

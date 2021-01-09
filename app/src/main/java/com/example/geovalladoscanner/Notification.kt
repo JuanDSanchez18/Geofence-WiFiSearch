@@ -1,3 +1,9 @@
+/* Aplicación GeovalladoScanner
+Notification.kt
+ * Crea canal de notificaiones, desde MainActivity.kt
+ * Eastilo de notificación.
+ * Envía notificaciones según version de android desde ScannerWifiService.kt
+*/
 package com.example.geovalladoscanner
 
 import android.app.Notification
