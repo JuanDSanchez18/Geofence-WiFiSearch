@@ -56,8 +56,23 @@ class MainActivity : AppCompatActivity() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         geofencingClient = LocationServices.getGeofencingClient(this)
 
-        createNotificationChannel(this)
+        createNotificationChannel(this) //Notification.kt
         ignoreBatteryOptimization()
+    }
+
+    @SuppressLint("BatteryLife")
+    private fun ignoreBatteryOptimization() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val intent = Intent()
+            val packageName: String = packageName
+            val pm =
+                getSystemService(Context.POWER_SERVICE) as PowerManager
+            if (pm.isIgnoringBatteryOptimizations(packageName)) {
+                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                intent.data = Uri.parse("package:$packageName")
+                startActivity(intent)
+            }
+        }
     }
 
     private var addedGeofence = false
@@ -214,48 +229,7 @@ class MainActivity : AppCompatActivity() {
         }.build()
     }
 
-    private fun removeGeofences() {
-        geofencingClient.removeGeofences(geofencePendingIntent)?.run {
-            addOnSuccessListener {
-                // Geofences removed
-            }
-            addOnFailureListener {
-                // Failed to remove geofences
-            }
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        removeGeofences()
-    }
-
-    private fun actionOnService(action: Actions) {
-        Intent(this, ScannerWifiService::class.java).also {
-            it.action = action.name
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(it)
-                return
-            }
-            startService(it)
-        }
-    }
-
-    @SuppressLint("BatteryLife")
-    private fun ignoreBatteryOptimization() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val intent = Intent()
-            val packageName: String = packageName
-            val pm =
-                getSystemService(Context.POWER_SERVICE) as PowerManager
-            if (pm.isIgnoringBatteryOptimizations(packageName)) {
-                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-                intent.data = Uri.parse("package:$packageName")
-                startActivity(intent)
-            }
-        }
-    }
-
+    // Siguientes ciclos de vida OnPause, OnResume y OnDestroy.
     private lateinit var wakeLock: PowerManager.WakeLock
     private var wakeLockOn = false
     override fun onPause() {
@@ -270,9 +244,42 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (!addedGeofence and checkPermissions()) {
+            createLocationRequestAndCheckSettings()
+        }
+
         if (wakeLockOn)
             if (wakeLock.isHeld) wakeLock.release()
-   }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        removeGeofences()
+    }
+
+    private fun removeGeofences() {
+        geofencingClient.removeGeofences(geofencePendingIntent)?.run {
+            addOnSuccessListener {
+                // Geofences removed
+            }
+            addOnFailureListener {
+                // Failed to remove geofences
+            }
+        }
+    }
+
+    // Para los botonos definidos en OnStart.
+    // Inicia el servicio ScannerWifiService.kt, simulando activaciones de geovallado.
+    private fun actionOnService(action: Actions) {
+        Intent(this, ScannerWifiService::class.java).also {
+            it.action = action.name
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(it)
+                return
+            }
+            startService(it)
+        }
+    }
 
 }
 
