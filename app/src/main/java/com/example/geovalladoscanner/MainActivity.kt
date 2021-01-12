@@ -49,6 +49,10 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    // Banderas
+    private var addedGeofence = false
+    private var createLocationRequestAndCheckSettingsBool = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -56,34 +60,9 @@ class MainActivity : AppCompatActivity() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         geofencingClient = LocationServices.getGeofencingClient(this)
 
-        createNotificationChannel(this) //Notification.kt
         ignoreBatteryOptimization()
-    }
+        createNotificationChannel(this) //Notification.kt
 
-    @SuppressLint("BatteryLife")
-    private fun ignoreBatteryOptimization() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val intent = Intent()
-            val packageName: String = packageName
-            val pm =
-                getSystemService(Context.POWER_SERVICE) as PowerManager
-            if (pm.isIgnoringBatteryOptimizations(packageName)) {
-                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-                intent.data = Uri.parse("package:$packageName")
-                startActivity(intent)
-            }
-        }
-    }
-
-    private var addedGeofence = false
-    override fun onStart() {
-        super.onStart()
-
-        if (!addedGeofence and checkPermissions()) {
-            createLocationRequestAndCheckSettings()
-        }
-
-        //Buttons
         findViewById<Button>(R.id.enterGeofence).let {
             it.setOnClickListener {
                 actionOnService(Actions.ENTER)
@@ -101,7 +80,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //request permission Q
+    @SuppressLint("BatteryLife")
+    private fun ignoreBatteryOptimization() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val intent = Intent()
+            val packageName: String = packageName
+            val pm =
+                getSystemService(Context.POWER_SERVICE) as PowerManager
+            if (pm.isIgnoringBatteryOptimizations(packageName)) {
+                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                intent.data = Uri.parse("package:$packageName")
+                startActivity(intent)
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        //Toast.makeText(this@MainActivity, "onStart", Toast.LENGTH_SHORT).show()
+        if (!addedGeofence and checkPermissions())
+            createLocationRequestAndCheckSettings()
+    }
+
     private fun checkPermissions(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ActivityCompat.requestPermissions(
@@ -137,6 +137,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun createLocationRequestAndCheckSettings() {
+        createLocationRequestAndCheckSettingsBool = true
         locationRequest = LocationRequest.create()?.apply {
             interval = 20 * 1000  //revisar
             fastestInterval = 15 * 1000
@@ -186,6 +187,7 @@ class MainActivity : AppCompatActivity() {
             }
             addOnFailureListener {
                 // Failed to add geofences
+                addedGeofence = false
             }
         }
     }
@@ -193,7 +195,6 @@ class MainActivity : AppCompatActivity() {
     //Crear georefencia
     private fun createGeofence(): GeofencingRequest? {
         val geofenceList: ArrayList<Geofence> = arrayListOf()
-
         for (station in GeofenceConstants.Station_TM) {
             geofenceList.add(
                 Geofence.Builder()
@@ -244,12 +245,30 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (!addedGeofence and checkPermissions()) {
-            createLocationRequestAndCheckSettings()
+        //Toast.makeText(this@MainActivity, "onResume", Toast.LENGTH_SHORT).show()
+        /*if (!addedGeofence and checkPermissions()) {
+            if (createLocationRequestAndCheckSettingsBool)
+                addGeofences()
+            else
+                createLocationRequestAndCheckSettings()
+        }*/
+        if (wakeLockOn) {
+            if (wakeLock.isHeld) wakeLock.release()
         }
 
-        if (wakeLockOn)
-            if (wakeLock.isHeld) wakeLock.release()
+    }
+
+    // Para los botonos definidos en OnStart.
+    // Inicia el servicio ScannerWifiService.kt, simulando activaciones de geovallado.
+    private fun actionOnService(action: Actions) {
+        Intent(this, ScannerWifiService::class.java).also {
+            it.action = action.name
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(it)
+                return
+            }
+            startService(it)
+        }
     }
 
     override fun onDestroy() {
@@ -268,18 +287,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Para los botonos definidos en OnStart.
-    // Inicia el servicio ScannerWifiService.kt, simulando activaciones de geovallado.
-    private fun actionOnService(action: Actions) {
-        Intent(this, ScannerWifiService::class.java).also {
-            it.action = action.name
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(it)
-                return
-            }
-            startService(it)
-        }
-    }
 }
 
 
