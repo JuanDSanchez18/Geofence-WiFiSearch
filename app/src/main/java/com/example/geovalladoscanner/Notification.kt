@@ -18,6 +18,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 
+
 fun createNotificationChannel(context: Context) {
     // Create the NotificationChannel, but only on API 26+ because
     // the NotificationChannel class is new and not in the support library
@@ -60,12 +61,15 @@ fun notification(context: Context) {
 
         // Set the intent that will fire when the user taps the notification
         .setContentIntent(pendingIntent)
-        .setAutoCancel(true)
 
     with(NotificationManagerCompat.from(context)) {
         // notificationId is a unique int for each notification that you must define
         notify(notificationId, builder.build())
     }
+}
+
+fun clearNotification(context: Context) {
+    NotificationManagerCompat.from(context).cancel(notificationId)
 }
 
 @RequiresApi(Build.VERSION_CODES.O)

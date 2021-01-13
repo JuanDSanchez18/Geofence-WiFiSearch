@@ -53,6 +53,8 @@ private var repetitiveAplist : MutableList<Int> = mutableListOf()
 private var nearestAp: String = ""
 private var outSSID = 0
 
+private val mainActivity = MainActivity.instance
+
 class ScannerWifiService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -105,12 +107,13 @@ class ScannerWifiService : Service() {
         }
     }
 
-    private fun sendForegroundNotification(){
+    private fun sendForegroundNotification() {
         val notificationId = 420
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notification = notificationForeground(this)
             startForeground(notificationId, notification)
-        } else {
+        }else {
+            mainActivity.stopLocationUpdates()
             notification(this)
         }
     }
@@ -181,6 +184,7 @@ class ScannerWifiService : Service() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun startWifiScan () {
         var ready = true
         val myContext: Context = this
@@ -261,11 +265,14 @@ class ScannerWifiService : Service() {
     }
 
     private fun stopService() {
-        isRepetitiveScan = false
         stopWLock()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             stopForeground(true)
-        }else stopSelf()
+        }else {
+            stopSelf()
+            clearNotification(this)
+        }
+        isRepetitiveScan = false
     }
 }
 

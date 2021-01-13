@@ -11,6 +11,7 @@ package com.example.geovalladoscanner
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.ActivityManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -33,6 +34,10 @@ import java.util.*
 //https://github.com/Damian9696/Geofences/blob/master/app/src/main/java/com/example/android/treasureHunt/HuntMainActivity.kt
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        val instance = MainActivity()
+    }
+
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
 
@@ -46,12 +51,12 @@ class MainActivity : AppCompatActivity() {
         // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
         // addGeofences() and removeGeofences().
         PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-
     }
 
     // Banderas
     private var addedGeofence = false
     private var createLocationRequestAndCheckSettingsBool = false
+    private var locationUpdatesBool = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -108,7 +113,8 @@ class MainActivity : AppCompatActivity() {
                 this,
                 arrayOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                ),
                 22
             )
 
@@ -126,7 +132,8 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ),
                 22
             )
 
@@ -140,7 +147,7 @@ class MainActivity : AppCompatActivity() {
         createLocationRequestAndCheckSettingsBool = true
         locationRequest = LocationRequest.create()?.apply {
             interval = 20 * 1000  //revisar
-            fastestInterval = 15 * 1000
+            fastestInterval = 10 * 1000
             maxWaitTime = 40 * 1000
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }!!
@@ -169,7 +176,7 @@ class MainActivity : AppCompatActivity() {
                         this@MainActivity,
                         29
                     )//REQUEST_CHECK_SETTINGS
-                } catch (sendEx: IntentSender.SendIntentException) {
+                }catch (sendEx: IntentSender.SendIntentException) {
                     // Ignore the error.
                     //sendEx.printStackTrace()
                 }
@@ -182,8 +189,8 @@ class MainActivity : AppCompatActivity() {
         geofencingClient.addGeofences(createGeofence(), geofencePendingIntent)?.run {
             addOnSuccessListener {
                 // Geofences added
-                addedGeofence = true
                 Toast.makeText(this@MainActivity, "Added geofences", Toast.LENGTH_SHORT).show()
+                addedGeofence = true
             }
             addOnFailureListener {
                 // Failed to add geofences
@@ -217,8 +224,10 @@ class MainActivity : AppCompatActivity() {
 
                     // Set the transition types of interest. Alerts are only generated for these
                     // transition. We track dwell and exit transitions in this sample.
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_DWELL
-                            or Geofence.GEOFENCE_TRANSITION_EXIT)
+                    .setTransitionTypes(
+                        Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_DWELL
+                                or Geofence.GEOFENCE_TRANSITION_EXIT
+                    )
 
                     // Create the geofence.
                     .build()
@@ -237,28 +246,80 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
                 newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::MyWakelockTag").apply {
-                    acquire(10*60*1000L /*10 minutes*/)
+                    acquire(10 * 60 * 1000L /*10 minutes*/)
                 }
             }
         wakeLockOn = true
+
+        startLocationUpdates()
+
     }
 
     override fun onResume() {
         super.onResume()
         //Toast.makeText(this@MainActivity, "onResume", Toast.LENGTH_SHORT).show()
-        /*if (!addedGeofence and checkPermissions()) {
-            if (createLocationRequestAndCheckSettingsBool)
-                addGeofences()
-            else
-                createLocationRequestAndCheckSettings()
-        }*/
+        stopLocationUpdates()
         if (wakeLockOn) {
-            if (wakeLock.isHeld) wakeLock.release()
+            if (wakeLock.isHeld) {
+                wakeLock.release()
+                wakeLockOn = false
+            }
         }
-
     }
 
-    // Para los botonos definidos en OnStart.
+    @SuppressLint("MissingPermission")
+    private fun startLocationUpdates() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            if (!locationUpdatesBool and !isServiceRunning(ScannerWifiService::class.java)) {
+                fusedLocationClient.requestLocationUpdates(
+                    locationRequest,
+                    pendingIntentLocation()
+                )
+                locationUpdatesBool = true
+            }
+        }
+    }
+
+    fun stopLocationUpdates() {
+        if (locationUpdatesBool) {
+            fusedLocationClient.removeLocationUpdates(pendingIntentLocation())
+            locationUpdatesBool = false
+        }
+    }
+
+    private fun pendingIntentLocation(): PendingIntent? {
+        val intent = Intent(this, LocationUpdatesBroadcastReceiver::class.java)
+        intent.action = ".ACTION_PROCESS_UPDATES"
+        return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+
+    @Suppress("DEPRECATION") //Appi level 26 Oreo < 8
+    private fun <T> Context.isServiceRunning(service: Class<T>): Boolean {
+        return (getSystemService(ACTIVITY_SERVICE) as ActivityManager)
+            .getRunningServices(Integer.MAX_VALUE)
+            .any { it.service.className == service.name }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopLocationUpdates()
+        removeGeofences()
+    }
+
+    private fun removeGeofences() {
+        geofencingClient.removeGeofences(geofencePendingIntent)?.run {
+            addOnSuccessListener {
+                // Geofences removed
+                Toast.makeText(this@MainActivity, "Removed geofences", Toast.LENGTH_SHORT).show()
+            }
+            addOnFailureListener {
+                // Failed to remove geofences
+                Toast.makeText(this@MainActivity, "Removed geofences failed", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // Para los botones definidos en OnStart.
     // Inicia el servicio ScannerWifiService.kt, simulando activaciones de geovallado.
     private fun actionOnService(action: Actions) {
         Intent(this, ScannerWifiService::class.java).also {
@@ -268,22 +329,6 @@ class MainActivity : AppCompatActivity() {
                 return
             }
             startService(it)
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        removeGeofences()
-    }
-
-    private fun removeGeofences() {
-        geofencingClient.removeGeofences(geofencePendingIntent)?.run {
-            addOnSuccessListener {
-                // Geofences removed
-            }
-            addOnFailureListener {
-                // Failed to remove geofences
-            }
         }
     }
 
