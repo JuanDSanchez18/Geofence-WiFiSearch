@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity() {
             val packageName: String = packageName
             val pm =
                 getSystemService(Context.POWER_SERVICE) as PowerManager
-            if (pm.isIgnoringBatteryOptimizations(packageName)) {
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
                 intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
                 intent.data = Uri.parse("package:$packageName")
                 startActivity(intent)
@@ -146,9 +146,9 @@ class MainActivity : AppCompatActivity() {
     private fun createLocationRequestAndCheckSettings() {
         createLocationRequestAndCheckSettingsBool = true
         locationRequest = LocationRequest.create()?.apply {
-            interval = 20 * 1000  //revisar
-            fastestInterval = 10 * 1000
-            maxWaitTime = 40 * 1000
+            interval = 10 * 1000  //revisar
+            fastestInterval = 5 * 1000
+            maxWaitTime = 30 * 1000
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }!!
 
@@ -242,6 +242,7 @@ class MainActivity : AppCompatActivity() {
     // Siguientes ciclos de vida OnPause, OnResume y OnDestroy.
     private lateinit var wakeLock: PowerManager.WakeLock
     private var wakeLockOn = false
+    @Suppress("DEPRECATION")
     override fun onPause() {
         super.onPause()
         wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
@@ -251,8 +252,14 @@ class MainActivity : AppCompatActivity() {
             }
         wakeLockOn = true
 
-        startLocationUpdates()
-
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+                newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "MyApp::MyScreenWakelockTag").apply {
+                    acquire(10 * 60 * 1000L /*10 minutes*/)
+                }
+            }
+            startLocationUpdates()
+        }
     }
 
     override fun onResume() {
@@ -269,14 +276,12 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            if (!locationUpdatesBool and !isServiceRunning(ScannerWifiService::class.java)) {
-                fusedLocationClient.requestLocationUpdates(
-                    locationRequest,
-                    pendingIntentLocation()
-                )
-                locationUpdatesBool = true
-            }
+        if (!locationUpdatesBool and !isServiceRunning(ScannerWifiService::class.java)) {
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                pendingIntentLocation()
+            )
+            locationUpdatesBool = true
         }
     }
 
@@ -288,9 +293,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun pendingIntentLocation(): PendingIntent? {
-        val intent = Intent(this, LocationUpdatesBroadcastReceiver::class.java)
+        val intent = Intent(this, LocationUpdatesService::class.java)
         intent.action = ".ACTION_PROCESS_UPDATES"
-        return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     @Suppress("DEPRECATION") //Appi level 26 Oreo < 8
@@ -334,4 +339,5 @@ class MainActivity : AppCompatActivity() {
 
 }
 
-
+// Probar wakelock sirve??
+// LocationupdatesService sirve?

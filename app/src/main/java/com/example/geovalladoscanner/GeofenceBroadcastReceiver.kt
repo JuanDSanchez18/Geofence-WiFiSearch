@@ -15,6 +15,8 @@ import android.os.Build
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
 
+private val mainActivity = MainActivity.instance
+
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -35,6 +37,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                         context.startForegroundService(it)
                         return
                     }
+                    mainActivity.stopLocationUpdates()
                     context.startService(it)
                 }
             }

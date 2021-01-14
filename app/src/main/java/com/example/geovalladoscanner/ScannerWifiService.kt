@@ -53,12 +53,10 @@ private var repetitiveAplist : MutableList<Int> = mutableListOf()
 private var nearestAp: String = ""
 private var outSSID = 0
 
-private val mainActivity = MainActivity.instance
-
 class ScannerWifiService : Service() {
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent != null) {
+            ignoreBatteryOptimization()
             when (intent.action) {
                 Actions.ENTER.name -> {
                     isGeofence = true
@@ -91,7 +89,6 @@ class ScannerWifiService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? {
-        TODO("Not yet implemented")
         return null
     }
 
@@ -113,14 +110,12 @@ class ScannerWifiService : Service() {
             val notification = notificationForeground(this)
             startForeground(notificationId, notification)
         }else {
-            mainActivity.stopLocationUpdates()
             notification(this)
         }
     }
 
     @SuppressLint("ShortAlarm")
     private fun geofenceEnter() {
-        ignoreBatteryOptimization()
         initializeWLocks()
         initializeScanWifi()
         repetitiveScanWifi()

@@ -3,7 +3,7 @@
 xmlns:tools="http://schemas.android.com/tools"
 package="com.example.geovalladoscanner">
 
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+<!-- <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/> -->
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- Android 10 -->
 <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
@@ -33,16 +33,6 @@ package="com.example.geovalladoscanner">
     </activity>
 
     <receiver
-        android:name=".LocationUpdatesBroadcastReceiver"
-        android:permission="TODO"
-        tools:ignore="ExportedReceiver">
-        <intent-filter android:priority="999">
-            <action android:name=".ACTION_PROCESS_UPDATES" />
-        </intent-filter>
-
-    </receiver>
-
-    <receiver
         android:name=".GeofenceBroadcastReceiver"
         android:permission="TODO"
         tools:ignore="ExportedReceiver">
@@ -54,6 +44,14 @@ package="com.example.geovalladoscanner">
     <service android:name=".ScannerWifiService"
         android:process=":scannerWifiService"/>
 
+    <service
+        android:name=".LocationUpdatesService"
+        android:permission="TODO"
+        android:exported="false">
+        <intent-filter android:priority="999">
+            <action android:name=".ACTION_PROCESS_UPDATES" />
+        </intent-filter>
+    </service>
 
 </application>
 
