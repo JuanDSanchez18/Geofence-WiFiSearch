@@ -4,12 +4,8 @@ import android.annotation.SuppressLint
 import android.app.IntentService
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.os.PowerManager
-import android.provider.Settings
 import android.widget.Toast
 import com.google.android.gms.location.LocationResult
 
@@ -31,6 +27,8 @@ class LocationUpdatesService(name: String = "LocationUpdatesService" ): IntentSe
                         Toast.makeText(myContext, "Location request", Toast.LENGTH_SHORT).show()
                     }
                 }
+            }else if (intent.action == "STOP_LOCATION_UPDATES") {
+                stopSelf()
             }
         }
     }

@@ -42,7 +42,7 @@ fun createNotificationChannel(context: Context) {
     }
 }
 
-fun notification(context: Context) {
+fun notification(context: Context, textnotification: String?) {
 
     // Create an explicit intent for an Activity in your app
     val intent = Intent(context, MainActivity::class.java).apply {
@@ -55,7 +55,7 @@ fun notification(context: Context) {
         //https://walkiriaapps.com/blog/android/iconos-notificaciones-android-studio/
         .setSmallIcon(R.drawable.geofence_icon)
         .setContentTitle("Activación geovallado")
-        .setContentText("Empezó búsqueda activa de Wifi")
+        .setContentText(textnotification)
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         .setVibrate(longArrayOf(400, 200, 300, 200, 300, 200, 300))
 
@@ -73,7 +73,7 @@ fun clearNotification(context: Context) {
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun notificationForeground(context: Context): Notification {
+fun notificationForeground(context: Context, textnotification: String?): Notification {
 
     val pendingIntent: PendingIntent =
         Intent(context, MainActivity::class.java).let { notificationIntent ->
@@ -85,7 +85,7 @@ fun notificationForeground(context: Context): Notification {
         .setColor(Color.YELLOW)
         .setShowWhen(true)
         .setContentTitle("Activación geovallado")
-        .setContentText("Empezó búsqueda activa de Wifi")
+        .setContentText(textnotification)
         .setContentIntent(pendingIntent)
         .setTicker("Ticket Text")
         .build()

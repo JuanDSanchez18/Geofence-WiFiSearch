@@ -62,7 +62,8 @@ class ScannerWifiService : Service() {
                     isGeofence = true
                     repetitiveDelay = defaultRepetitiveDelay
                     if (!isRepetitiveScan) {
-                        sendForegroundNotification()
+                        val textnotification = intent.extras?.getString("Station_name")
+                        sendNotification(textnotification)
                         geofenceEnter()
                     } else if (isChangeRepetitivedelay) {
                         repetitiveScanWifi()
@@ -104,13 +105,13 @@ class ScannerWifiService : Service() {
         }
     }
 
-    private fun sendForegroundNotification() {
+    private fun sendNotification(textnotification: String?) {
         val notificationId = 420
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notification = notificationForeground(this)
+            val notification = notificationForeground(this,textnotification)
             startForeground(notificationId, notification)
         }else {
-            notification(this)
+            notification(this,textnotification)
         }
     }
 
@@ -143,13 +144,13 @@ class ScannerWifiService : Service() {
         wakeLock =
             (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
                 newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::MyWakelockTag").apply {
-                    acquire(10*60*1000L /*10 minutes*/)
+                    acquire(10 * 60 * 1000L /*10 minutes*/)
                 }
             }
     }
 
     private fun startWLock() {
-        wakeLock.acquire(10*60*1000L /*10 minutes*/)
+        wakeLock.acquire(10 * 60 * 1000L /*10 minutes*/)
     }
 
     private fun stopWLock() {
@@ -195,7 +196,7 @@ class ScannerWifiService : Service() {
             val success = wifiManager.startScan()
             if (!success) {
                 messageScan = "Something wrong"
-                ignoreBatteryOptimization()
+                //ignoreBatteryOptimization()
             }
             Handler(Looper.getMainLooper()).post {
                 Toast.makeText(myContext, messageScan, Toast.LENGTH_SHORT).show()
@@ -269,6 +270,8 @@ class ScannerWifiService : Service() {
         }
         isRepetitiveScan = false
     }
+
+
 }
 
 /*

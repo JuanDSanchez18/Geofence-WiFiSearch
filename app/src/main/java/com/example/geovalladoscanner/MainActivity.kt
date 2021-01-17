@@ -13,9 +13,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
-import android.content.IntentSender
+import android.content.*
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -30,6 +28,7 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import java.util.*
+
 
 //https://github.com/Damian9696/Geofences/blob/master/app/src/main/java/com/example/android/treasureHunt/HuntMainActivity.kt
 class MainActivity : AppCompatActivity() {
@@ -58,6 +57,25 @@ class MainActivity : AppCompatActivity() {
     private var createLocationRequestAndCheckSettingsBool = false
     private var locationUpdatesBool = false
 
+    private val deviceIdleReceiver = object : BroadcastReceiver() {
+        private var screenWakeLockOn = false
+        @SuppressLint("BatteryLife")
+        override fun onReceive(context: Context, intent: Intent) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val pm =
+                    getSystemService(Context.POWER_SERVICE) as PowerManager
+                if (pm.isDeviceIdleMode) {
+                    val intent = Intent()
+                    val packageName: String = packageName
+                    intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                    if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                        intent.data = Uri.parse("package:$packageName")
+                    }
+                    startActivity(intent)
+                }
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -105,6 +123,12 @@ class MainActivity : AppCompatActivity() {
         //Toast.makeText(this@MainActivity, "onStart", Toast.LENGTH_SHORT).show()
         if (!addedGeofence and checkPermissions())
             createLocationRequestAndCheckSettings()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val intentFilter = IntentFilter()
+            intentFilter.addAction(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED)
+            registerReceiver(deviceIdleReceiver, intentFilter)
+        }
     }
 
     private fun checkPermissions(): Boolean {
@@ -255,7 +279,7 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
                 newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "MyApp::MyScreenWakelockTag").apply {
-                    acquire(10 * 60 * 1000L /*10 minutes*/)
+                    acquire(30 * 60 * 1000L /*10 minutes*/)
                 }
             }
             startLocationUpdates()
@@ -285,8 +309,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun stopLocationUpdates() {
-        if (locationUpdatesBool) {
+    private fun stopLocationUpdates() {
+        if (isServiceRunning(LocationUpdatesService::class.java)) {
             fusedLocationClient.removeLocationUpdates(pendingIntentLocation())
             locationUpdatesBool = false
         }
@@ -329,6 +353,7 @@ class MainActivity : AppCompatActivity() {
     private fun actionOnService(action: Actions) {
         Intent(this, ScannerWifiService::class.java).also {
             it.action = action.name
+            it.putExtra("Station_name", "Prueba botones")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(it)
                 return
@@ -337,7 +362,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onRestart() {
+        super.onRestart()
+            if (isServiceRunning(ScannerWifiService::class.java)) {
+                Toast.makeText(this@MainActivity, "Hola", Toast.LENGTH_SHORT).show()
+            }
+    }
+
 }
 
 // Probar wakelock sirve??
 // LocationupdatesService sirve?
+
+//https://stackoverflow.com/questions/46450225/geofence-events-not-always-called
+//Probarlo mañana
