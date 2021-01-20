@@ -58,8 +58,8 @@ class MainActivity : AppCompatActivity() {
     private var locationUpdatesBool = false
 
     private val deviceIdleReceiver = object : BroadcastReceiver() {
-        private var screenWakeLockOn = false
         @SuppressLint("BatteryLife")
+        @Suppress("NAME_SHADOWING")
         override fun onReceive(context: Context, intent: Intent) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val pm =
@@ -277,12 +277,12 @@ class MainActivity : AppCompatActivity() {
         wakeLockOn = true
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            startLocationUpdates()
             (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
                 newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "MyApp::MyScreenWakelockTag").apply {
                     acquire(30 * 60 * 1000L /*10 minutes*/)
                 }
             }
-            startLocationUpdates()
         }
     }
 
@@ -301,24 +301,27 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
         if (!locationUpdatesBool and !isServiceRunning(ScannerWifiService::class.java)) {
+            val action = "start"
             fusedLocationClient.requestLocationUpdates(
                 locationRequest,
-                pendingIntentLocation()
+                pendingIntentLocation(action)
             )
             locationUpdatesBool = true
         }
     }
 
-    private fun stopLocationUpdates() {
-        if (isServiceRunning(LocationUpdatesService::class.java)) {
-            fusedLocationClient.removeLocationUpdates(pendingIntentLocation())
+    fun stopLocationUpdates() {
+        if (locationUpdatesBool) {
+            val action = "stop"
+            fusedLocationClient.removeLocationUpdates(pendingIntentLocation(action))
             locationUpdatesBool = false
         }
     }
 
-    private fun pendingIntentLocation(): PendingIntent? {
+    private fun pendingIntentLocation(action: String): PendingIntent? {
         val intent = Intent(this, LocationUpdatesService::class.java)
         intent.action = ".ACTION_PROCESS_UPDATES"
+        intent.putExtra("Action",action)
         return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
@@ -362,17 +365,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRestart() {
-        super.onRestart()
-            if (isServiceRunning(ScannerWifiService::class.java)) {
-                Toast.makeText(this@MainActivity, "Hola", Toast.LENGTH_SHORT).show()
-            }
-    }
 
 }
 
-// Probar wakelock sirve??
-// LocationupdatesService sirve?
+// Probar sin startLocationupdates service.
 
 //https://stackoverflow.com/questions/46450225/geofence-events-not-always-called
 //Probarlo mañana

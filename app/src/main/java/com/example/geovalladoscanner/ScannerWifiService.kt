@@ -59,11 +59,11 @@ class ScannerWifiService : Service() {
             ignoreBatteryOptimization()
             when (intent.action) {
                 Actions.ENTER.name -> {
+                    val textnotification = intent.extras?.getString("Station_name")
+                    sendNotification(textnotification)
                     isGeofence = true
                     repetitiveDelay = defaultRepetitiveDelay
                     if (!isRepetitiveScan) {
-                        val textnotification = intent.extras?.getString("Station_name")
-                        sendNotification(textnotification)
                         geofenceEnter()
                     } else if (isChangeRepetitivedelay) {
                         repetitiveScanWifi()

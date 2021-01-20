@@ -6,6 +6,7 @@
     <string name="stop_service">Stop service</string>
     <string name="exit_geofence">Exit Geofence</string>
     <string name="enter_geofence">Enter geofence</string>
+    <string name="tm_image">TM image</string>
 
 
 </resources>
