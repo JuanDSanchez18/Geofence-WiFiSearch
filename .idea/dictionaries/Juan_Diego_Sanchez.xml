@@ -8,6 +8,7 @@
       <w>repetive</w>
       <w>rssi</w>
       <w>ssid</w>
+      <w>textnotification</w>
     </words>
   </dictionary>
 </component>

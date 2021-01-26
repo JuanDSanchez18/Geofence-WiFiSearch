@@ -6,22 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/scanReport"
-        android:layout_width="247dp"
-        android:layout_height="60dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="52dp"
-        android:text="@string/ScanList"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/TMView" />
+    <!-- comment buttons -->
 
     <ImageView
         android:id="@+id/TMView"
         android:layout_width="360dp"
         android:layout_height="174dp"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="30dp"
         android:adjustViewBounds="true"
         android:contentDescription="@string/tm_image"
         app:layout_constraintEnd_toEndOf="parent"
@@ -30,7 +21,16 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/tm" />
 
-    <!-- comment buttons -->
+    <TextView
+        android:id="@+id/scanReport"
+        android:layout_width="247dp"
+        android:layout_height="60dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"
+        android:text="@string/ScanList"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/TMView" />
 
     <Button
         android:id="@+id/enterGeofence"

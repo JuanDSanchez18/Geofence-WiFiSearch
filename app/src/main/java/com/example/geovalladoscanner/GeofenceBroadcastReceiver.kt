@@ -8,7 +8,6 @@ GeofenceBroadcastReceiver.kt
 */
 package com.example.geovalladoscanner
 
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -79,9 +78,8 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         for (geofence in triggeringGeofences) {
             triggeringGeofencesIdsList.add(geofence.requestId)
         }
-        val triggeringGeofencesIdsString = TextUtils.join(", ", triggeringGeofencesIdsList)
 
-        return "Estación: $triggeringGeofencesIdsString \n Empieza Scan Wifi."
+        return TextUtils.join(", ", triggeringGeofencesIdsList)  //Empieza Scan Wifi."
     }
 }
 

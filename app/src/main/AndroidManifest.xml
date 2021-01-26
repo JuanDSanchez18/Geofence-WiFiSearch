@@ -4,17 +4,19 @@ xmlns:tools="http://schemas.android.com/tools"
 package="com.example.geovalladoscanner">
 
 <!-- <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/> -->
+    <!--Geofences -->
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <!-- Android 10 -->
+    <!--Android 10 -->
 <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
+    <!--Scanner Wifi-->
 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
-
+    <!--Doze mode-->
 <uses-permission android:name="android.permission.WAKE_LOCK" />
 <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
-    <!-- Android 8 -->
+    <!--Android 8 -->
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
 

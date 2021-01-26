@@ -59,6 +59,9 @@ fun notification(context: Context, textnotification: String?) {
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         .setVibrate(longArrayOf(400, 200, 300, 200, 300, 200, 300))
 
+        //Not sound when the notification is update
+        .setOnlyAlertOnce(true)
+
         // Set the intent that will fire when the user taps the notification
         .setContentIntent(pendingIntent)
 
@@ -86,6 +89,9 @@ fun notificationForeground(context: Context, textnotification: String?): Notific
         .setShowWhen(true)
         .setContentTitle("Activación geovallado")
         .setContentText(textnotification)
+        //Not sound when the notification is update
+        .setOnlyAlertOnce(true)
+
         .setContentIntent(pendingIntent)
         .setTicker("Ticket Text")
         .build()

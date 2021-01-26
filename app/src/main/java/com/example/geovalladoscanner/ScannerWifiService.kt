@@ -32,7 +32,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
 private lateinit var wifiManager: WifiManager
 private lateinit var wakeLock: PowerManager.WakeLock
 
@@ -43,7 +42,7 @@ private var isRepetitiveScan = false
 private var numberOfSSID = 0
 
 private const val defaultRepetitiveDelay = 30 * 1000
-private const val changeRepetitiveDelay = 2 * 60 * 1000
+private const val changeRepetitiveDelay = 3 * 30 * 1000
 private var repetitiveDelay = 0
 private var isChangeRepetitivedelay = false
 
@@ -53,14 +52,16 @@ private var repetitiveAplist : MutableList<Int> = mutableListOf()
 private var nearestAp: String = ""
 private var outSSID = 0
 
+private var textnotification: String = ""
+
 class ScannerWifiService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent != null) {
             ignoreBatteryOptimization()
             when (intent.action) {
                 Actions.ENTER.name -> {
-                    val textnotification = intent.extras?.getString("Station_name")
-                    sendNotification(textnotification)
+                    textnotification = intent.extras?.getString("Station_name").toString()
+                    sendNotification("Entrada: $textnotification")
                     isGeofence = true
                     repetitiveDelay = defaultRepetitiveDelay
                     if (!isRepetitiveScan) {
@@ -71,14 +72,16 @@ class ScannerWifiService : Service() {
                     isChangeRepetitivedelay = false
                 }
                 Actions.DWELL.name -> {
-                    /*if (!isChangeRepetitivedelay) {
+                    if (!isChangeRepetitivedelay) {
                         repetitiveDelay = changeRepetitiveDelay
                         isChangeRepetitivedelay = true
-                    }*/
+                        sendNotification("Permanencia: $textnotification")
+                    }
                 }
                 Actions.EXIT.name -> {
                     if (isGeofence) {
                         isGeofence = false
+                        sendNotification("Salida: $textnotification")
                     }
                 }
                 Actions.ENDSERVICE.name -> {
@@ -252,9 +255,10 @@ class ScannerWifiService : Service() {
         // Si no está en el geovallado y no tiene SSID de la lista
         if (!isSSID and !isGeofence) {
             outSSID++
-            /*if (outSSID == 1)
-                repetitiveDelay = 20 * 1000
-            */
+            if (isChangeRepetitivedelay) {
+                repetitiveDelay = defaultRepetitiveDelay //20 * 1000
+                isChangeRepetitivedelay = false
+            }
             if (outSSID == 3)
                 stopService()
         }
