@@ -64,18 +64,16 @@ class ScannerWifiService : Service() {
                     sendNotification("Entrada: $textnotification")
                     isGeofence = true
                     repetitiveDelay = defaultRepetitiveDelay
+                    isChangeRepetitivedelay = false
                     if (!isRepetitiveScan) {
                         geofenceEnter()
-                    } else if (isChangeRepetitivedelay) {
-                        repetitiveScanWifi()
                     }
-                    isChangeRepetitivedelay = false
                 }
                 Actions.DWELL.name -> {
+                    sendNotification("Permanencia: $textnotification")
                     if (!isChangeRepetitivedelay) {
                         repetitiveDelay = changeRepetitiveDelay
                         isChangeRepetitivedelay = true
-                        sendNotification("Permanencia: $textnotification")
                     }
                 }
                 Actions.EXIT.name -> {
@@ -249,14 +247,13 @@ class ScannerWifiService : Service() {
 
             if (nearestAp != apnearest)
                 nearestAp = apnearest
-
         }
 
         // Si no está en el geovallado y no tiene SSID de la lista
-        if (!isSSID and !isGeofence) {
+        if (!isGeofence and !isSSID) {
             outSSID++
             if (isChangeRepetitivedelay) {
-                repetitiveDelay = defaultRepetitiveDelay //20 * 1000
+                repetitiveDelay = defaultRepetitiveDelay //30 * 1000
                 isChangeRepetitivedelay = false
             }
             if (outSSID == 3)
@@ -274,7 +271,6 @@ class ScannerWifiService : Service() {
         }
         isRepetitiveScan = false
     }
-
 
 }
 

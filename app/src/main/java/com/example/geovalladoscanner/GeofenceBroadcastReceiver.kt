@@ -44,7 +44,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                         context.startForegroundService(it)
                         return
                     }
-                    mainActivity.stopLocationUpdates()
+                    //mainActivity.stopLocationUpdates()
                     context.startService(it)
                 }
             }
