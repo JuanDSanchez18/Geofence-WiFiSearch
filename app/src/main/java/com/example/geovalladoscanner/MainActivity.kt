@@ -310,7 +310,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun stopLocationUpdates() {
+    private fun stopLocationUpdates() {
         if (locationUpdatesBool) {
             val action = "stop"
             fusedLocationClient.removeLocationUpdates(pendingIntentLocation(action))
