@@ -4,9 +4,9 @@ ScannerWifiService.kt
     * Entrada.
         Manda notificación al usuario.
         Inicializa busqueda de Wifi. (Necesario)
-        Inicia Busqueda de Wifi repetitiva. (31 s)
+        Inicia Busqueda de Wifi repetitiva. (30 s)
     * Permanencia
-        Cambia la repetición a 2 minutos.
+        Cambia la repetición a 1 minuto y 30 segundos.
     * Salida
         Cambia bandera de geovallado.
  * Sevicio muere cuando no se está dentro del geovallado y no se recibe algún SSID de la lista.
