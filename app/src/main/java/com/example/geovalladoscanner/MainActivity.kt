@@ -367,8 +367,3 @@ class MainActivity : AppCompatActivity() {
 
 
 }
-
-// Probar sin startLocationupdates service.
-
-//https://stackoverflow.com/questions/46450225/geofence-events-not-always-called
-//Probarlo mañana

@@ -70,7 +70,7 @@ class ScannerWifiService : Service() {
                     }
                 }
                 Actions.DWELL.name -> {
-                    sendNotification("Permanencia: $textnotification")
+                    //sendNotification("Permanencia: $textnotification")
                     if (!isChangeRepetitivedelay) {
                         repetitiveDelay = changeRepetitiveDelay
                         isChangeRepetitivedelay = true
@@ -79,7 +79,7 @@ class ScannerWifiService : Service() {
                 Actions.EXIT.name -> {
                     if (isGeofence) {
                         isGeofence = false
-                        sendNotification("Salida: $textnotification")
+                        //sendNotification("Salida: $textnotification")
                     }
                 }
                 Actions.ENDSERVICE.name -> {

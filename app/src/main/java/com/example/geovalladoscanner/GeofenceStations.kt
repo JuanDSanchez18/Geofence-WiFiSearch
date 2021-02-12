@@ -38,11 +38,10 @@ internal object GeofenceConstants {
 
         */
         StationDataObject(
-            "Calle45",
+            "Estación1",
             LatLng(4.7541223,
             -74.0985158)
         )
-
     )
 
     val GEOFENCE_EXPIRATION_IN_MILLISECONDS: Long = TimeUnit.HOURS.toMillis(1)
