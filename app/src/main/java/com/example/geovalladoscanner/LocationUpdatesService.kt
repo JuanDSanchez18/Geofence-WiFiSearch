@@ -25,7 +25,7 @@ class LocationUpdatesService(name: String = "LocationUpdatesService" ): IntentSe
                     val myContext: Context = this
                     //val location = result.locations
                     Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(myContext, "Location request", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, "Solicitud de ubicación", Toast.LENGTH_SHORT).show()
                     }
                 }
             }

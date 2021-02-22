@@ -46,7 +46,7 @@ private const val changeRepetitiveDelay = 3 * 30 * 1000
 private var repetitiveDelay = 0
 private var isChangeRepetitivedelay = false
 
-private val apSSIDlist = listOf("Esp32_Calle45", "Esp32_Marly")
+private val apSSIDlist = listOf("Esp32_EStacion1", "Esp32_EStacion2")
 private var capApList: MutableList<String> = mutableListOf()
 private var repetitiveAplist : MutableList<Int> = mutableListOf()
 private var nearestAp: String = ""
@@ -70,7 +70,7 @@ class ScannerWifiService : Service() {
                     }
                 }
                 Actions.DWELL.name -> {
-                    //sendNotification("Permanencia: $textnotification")
+                    sendNotification("Permanencia: $textnotification")
                     if (!isChangeRepetitivedelay) {
                         repetitiveDelay = changeRepetitiveDelay
                         isChangeRepetitivedelay = true
@@ -79,6 +79,13 @@ class ScannerWifiService : Service() {
                 Actions.EXIT.name -> {
                     if (isGeofence) {
                         isGeofence = false
+                        if (isChangeRepetitivedelay) {
+                            repetitiveDelay = defaultRepetitiveDelay
+                            isChangeRepetitivedelay = false
+
+                            isRepetitiveScan = false
+                            repetitiveScanWifi()
+                        }
                         //sendNotification("Salida: $textnotification")
                     }
                 }
@@ -100,7 +107,6 @@ class ScannerWifiService : Service() {
         override fun onReceive(context: Context, intent: Intent) {
             val success = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false)
             if (success) {
-                //Toast.makeText(context, "Success Scan", Toast.LENGTH_SHORT).show()
                 scanSuccess()
             }
         }
@@ -185,18 +191,18 @@ class ScannerWifiService : Service() {
     private fun startWifiScan () {
         var ready = true
         val myContext: Context = this
-        var messageScan = "Success active scan"
+        var messageScan = "Búsqueda activa de Wifi exitosa"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !locationManager.isLocationEnabled) {
             ready = false
             Handler(Looper.getMainLooper()).post {
-                Toast.makeText(myContext, "Required GPS", Toast.LENGTH_LONG).show()
+                Toast.makeText(myContext, "Es necesario tener activo el GPS", Toast.LENGTH_LONG).show()
             }
             stopService()
         }
         if (ready) {
             val success = wifiManager.startScan()
             if (!success) {
-                messageScan = "Something wrong"
+                messageScan = "Algo anda mal"
                 //ignoreBatteryOptimization()
             }
             Handler(Looper.getMainLooper()).post {
@@ -239,9 +245,9 @@ class ScannerWifiService : Service() {
 
         if (numSSID  >  0) {
             isSSID = true
-            if (outSSID > 0) {
+            if (outSSID > 0)
                 outSSID = 0
-            }
+
             if (numSSID != numberOfSSID)
                 numberOfSSID = numSSID
 
@@ -252,10 +258,7 @@ class ScannerWifiService : Service() {
         // Si no está en el geovallado y no tiene SSID de la lista
         if (!isGeofence and !isSSID) {
             outSSID++
-            if (isChangeRepetitivedelay) {
-                repetitiveDelay = defaultRepetitiveDelay //30 * 1000
-                isChangeRepetitivedelay = false
-            }
+
             if (outSSID == 3)
                 stopService()
         }

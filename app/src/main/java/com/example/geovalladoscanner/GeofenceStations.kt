@@ -1,6 +1,6 @@
 /* Aplicación GeovalladoScanner
 GeofenceStations.kt
- * Define latitud y longitud de cada geovalaldo (estación de TM), el radio para todos y el tiempo
+* Define latitud y longitud de cada geovalaldo (estación de TM), el radio para todos y el tiempo
  considerado como permanenecia para la trancisión.
 */
 package com.example.geovalladoscanner
@@ -14,33 +14,21 @@ internal object GeofenceConstants {
 
     val Station_TM = arrayOf(
 
-        /*StationDataObject(
-            "Calle45",
-            LatLng(5.7541223, -75.0985158)
-        ),
-
         StationDataObject(
-            "Marly",
-            LatLng(5.7541223, -75.0985158)
-        ),
-
-        StationDataObject(
-            "Calle 22",
-            LatLng(4.8541223,
-            -76.0985158)
-        ),
-
-        StationDataObject(
-            "casa2",
-            LatLng(4.7341223,
-            -73.0985158)
-        ),
-
-        */
-        StationDataObject(
-            "Estación1",
+            "Casa",
             LatLng(4.7541223,
             -74.0985158)
+        ),
+        StationDataObject(
+            "Estación1",
+            LatLng(4.6272117,
+            -74.0640529)
+        ),
+
+        StationDataObject(
+            "Estación2",
+            LatLng(5.7541223,
+            -75.0985158)
         )
     )
 

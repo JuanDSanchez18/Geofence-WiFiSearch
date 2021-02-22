@@ -213,11 +213,12 @@ class MainActivity : AppCompatActivity() {
         geofencingClient.addGeofences(createGeofence(), geofencePendingIntent)?.run {
             addOnSuccessListener {
                 // Geofences added
-                Toast.makeText(this@MainActivity, "Added geofences", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Geovallados agregados", Toast.LENGTH_SHORT).show()
                 addedGeofence = true
             }
             addOnFailureListener {
                 // Failed to add geofences
+                Toast.makeText(this@MainActivity, "Geovallados NO agregados", Toast.LENGTH_SHORT).show()
                 addedGeofence = false
             }
         }
@@ -288,7 +289,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        //Toast.makeText(this@MainActivity, "onResume", Toast.LENGTH_SHORT).show()
         stopLocationUpdates()
         if (wakeLockOn) {
             if (wakeLock.isHeld) {
@@ -342,11 +342,11 @@ class MainActivity : AppCompatActivity() {
         geofencingClient.removeGeofences(geofencePendingIntent)?.run {
             addOnSuccessListener {
                 // Geofences removed
-                Toast.makeText(this@MainActivity, "Removed geofences", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Geovallados eliminados", Toast.LENGTH_SHORT).show()
             }
             addOnFailureListener {
                 // Failed to remove geofences
-                Toast.makeText(this@MainActivity, "Removed geofences failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Geovallados NO eliminados", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -364,6 +364,5 @@ class MainActivity : AppCompatActivity() {
             startService(it)
         }
     }
-
 
 }
